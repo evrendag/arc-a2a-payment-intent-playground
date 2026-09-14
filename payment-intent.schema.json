@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/evrendag/arc-a2a-payment-intent-playground/payment-intent.schema.json",
+  "title": "Arc A2A Payment Intent",
+  "description": "Experimental payment proposal for an agent-to-agent USDC payment.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["intent_id", "payer", "payee", "asset", "amount", "purpose", "expires_at"],
+  "properties": {
+    "intent_id": {
+      "type": "string",
+      "pattern": "^pi_[A-Za-z0-9_-]{8,}$"
+    },
+    "payer": {
+      "type": "string",
+      "description": "Agent or account proposing the payment."
+    },
+    "payee": {
+      "type": "string",
+      "description": "Agent or account receiving the payment."
+    },
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["symbol", "network"],
+      "properties": {
+        "symbol": { "type": "string", "const": "USDC" },
+        "network": { "type": "string", "const": "ARC-TESTNET" }
+      }
+    },
+    "amount": {
+      "type": "string",
+      "pattern": "^[0-9]+(\\.[0-9]{1,6})?$"
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 280
+    },
+    "max_amount": {
+      "type": "string",
+      "pattern": "^[0-9]+(\\.[0-9]{1,6})?$"
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128
+    },
+    "requires_human_approval": {
+      "type": "boolean",
+      "default": true
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}
