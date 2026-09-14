@@ -1,0 +1,19 @@
+{
+  "intent_id": "pi_research_20260914",
+  "payer": "agent://research-coordinator",
+  "payee": "service://arc-research-api",
+  "asset": {
+    "symbol": "USDC",
+    "network": "ARC-TESTNET"
+  },
+  "amount": "0.25",
+  "max_amount": "0.50",
+  "purpose": "Purchase one cited research response about stablecoin payments.",
+  "idempotency_key": "research-arc-payment-20260914-001",
+  "requires_human_approval": true,
+  "expires_at": "2026-09-15T00:00:00Z",
+  "metadata": {
+    "task": "stablecoin-payment-research",
+    "refund_expected": true
+  }
+}
