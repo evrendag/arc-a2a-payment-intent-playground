@@ -1,0 +1,18 @@
+{
+  "intent_id": "pi_merchant_20260914",
+  "payer": "agent://shopping-assistant",
+  "payee": "merchant://demo-store",
+  "asset": {
+    "symbol": "USDC",
+    "network": "ARC-TESTNET"
+  },
+  "amount": "2.00",
+  "max_amount": "2.00",
+  "purpose": "Buy one testnet coffee voucher.",
+  "idempotency_key": "coffee-voucher-20260914-001",
+  "requires_human_approval": true,
+  "expires_at": "2026-09-15T00:00:00Z",
+  "metadata": {
+    "order_reference": "demo-order-001"
+  }
+}
