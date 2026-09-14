@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Arc A2A Payment Intent Preview</title>
+  <style>
+    body{font:16px system-ui,sans-serif;max-width:720px;margin:40px auto;padding:0 20px;background:#f6f7fb;color:#172033}
+    main{background:white;border-radius:16px;padding:28px;box-shadow:0 8px 30px #17203318}
+    h1{margin-top:0}.row{display:flex;justify-content:space-between;border-bottom:1px solid #e8ebf1;padding:12px 0;gap:20px}
+    .label{color:#667085}.value{font-weight:600;text-align:right;overflow-wrap:anywhere}
+    .ok{margin-top:20px;padding:12px;border-radius:10px;background:#e9f8ef;color:#176b3a}
+  </style>
+</head>
+<body>
+<main>
+  <h1>Payment Intent Preview</h1>
+  <p>This local demo shows the details an agent should expose before a payment is approved.</p>
+  <section id="details"></section>
+  <div class="ok">No wallet is connected. No transaction is signed.</div>
+</main>
+<script>
+const intent={
+  intent_id:"pi_research_20260914",
+  payer:"agent://research-coordinator",
+  payee:"service://arc-research-api",
+  asset:"USDC · ARC-TESTNET",
+  amount:"0.25 USDC",
+  max_amount:"0.50 USDC",
+  purpose:"Purchase one cited research response about stablecoin payments.",
+  expires_at:"2026-09-15T00:00:00Z",
+  approval:"Human approval required"
+};
+const labels={intent_id:"Intent ID",payer:"Payer",payee:"Payee",asset:"Asset / Network",amount:"Requested amount",max_amount:"Maximum amount",purpose:"Purpose",expires_at:"Expires",approval:"Approval"};
+document.querySelector("#details").innerHTML=Object.entries(intent).map(([key,value])=>'<div class="row"><span class="label">'+labels[key]+'</span><span class="value">'+value+'</span></div>').join("");
+</script>
+</body>
+</html>
