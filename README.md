@@ -4,6 +4,19 @@ An experimental, human-readable format for AI agents to describe a proposed USDC
 
 This project is a small learning tool for exploring agent-to-agent payments on Arc Mainnet and Testnet. It does not custody funds, sign transactions, or claim to be an official Arc standard.
 
+## What the agent demo includes
+
+The new [ArcFlow Agent Payment Demo](src/agent-demo.html) demonstrates:
+
+1. An agent identity and purpose.
+2. A per-intent spending limit.
+3. Mainnet/Testnet chain selection.
+4. Payment-intent creation.
+5. Human approval as the default policy.
+6. A transparent result showing that no transaction was submitted.
+
+The demo validates the recipient format and refuses amounts above the agent limit. It intentionally does not connect a wallet or broadcast a transaction yet.
+
 ## Why payment intents?
 
 An agent should not jump directly from a task to a transfer. Before signing, a user or policy engine should be able to inspect:
@@ -46,13 +59,15 @@ A request can also become `rejected`, `expired`, or `cancelled`. The intent is n
 
 - `payment-intent.schema.json` — JSON Schema for the experimental format.
 - `config/arc-networks.json` — mainnet and testnet network configuration.
+- `config/agent-profile.json` — example agent purpose and spending policy.
 - `examples/research-agent-payment.json` — an agent paying for a research API call.
 - `examples/merchant-agent-payment.json` — an agent preparing a merchant payment.
-- `src/preview.html` — a dependency-free preview page that validates the important fields visually.
+- `src/preview.html` — payment intent preview.
+- `src/agent-demo.html` — interactive agent payment preview.
 
-## Run the preview
+## Run the demo
 
-Open `src/preview.html` directly in a browser. No wallet connection or API key is required.
+Open `src/agent-demo.html` directly in a browser. No wallet connection, private key, or API key is required.
 
 ## Important limitations
 
