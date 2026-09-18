@@ -1,0 +1,12 @@
+{
+  "agent_id": "arcflow-research-agent",
+  "name": "ArcFlow Payment Agent",
+  "purpose": "Prepare small, policy-controlled USDC payment intents on Arc.",
+  "network": "Arc Mainnet",
+  "chain_id": 5042,
+  "asset": "USDC",
+  "max_spend_per_intent": "0.01",
+  "human_approval_required": true,
+  "signing": "user_wallet",
+  "custody": "non-custodial"
+}
