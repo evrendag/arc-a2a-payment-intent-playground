@@ -1,0 +1,26 @@
+{
+  "mainnet": {
+    "name": "Arc",
+    "chainId": 5042,
+    "rpcUrl": "https://rpc.mainnet.arc.io",
+    "explorerUrl": "https://explorer.arc.io",
+    "currencySymbol": "USDC",
+    "nativeGasDecimals": 18,
+    "usdcErc20": {
+      "address": "0x3600000000000000000000000000000000000000",
+      "decimals": 6
+    }
+  },
+  "testnet": {
+    "name": "Arc Testnet",
+    "chainId": 5042002,
+    "rpcUrl": "https://rpc.testnet.arc.io",
+    "explorerUrl": "https://explorer.testnet.arc.io",
+    "currencySymbol": "USDC",
+    "nativeGasDecimals": 18,
+    "usdcErc20": {
+      "address": "0x3600000000000000000000000000000000000000",
+      "decimals": 6
+    }
+  }
+}
