@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ArcFlow Agent Payment Demo</title>
+<style>
+body{font:16px system-ui,sans-serif;background:#f6f7fb;color:#172033;max-width:760px;margin:32px auto;padding:0 18px}
+main{background:#fff;border-radius:18px;padding:28px;box-shadow:0 8px 30px #17203318}
+h1{margin:0 0 8px}.muted{color:#667085}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+label{display:block;font-size:13px;color:#667085;margin:14px 0 6px}
+input,select{box-sizing:border-box;width:100%;padding:12px;border:1px solid #d8dee9;border-radius:10px;font:inherit}
+.card{border:1px solid #e1e6ef;border-radius:12px;padding:14px;margin-top:18px}
+.row{display:flex;justify-content:space-between;gap:18px;padding:8px 0;border-bottom:1px solid #eef1f5}.row:last-child{border:0}
+button{margin-top:18px;width:100%;padding:13px;border:0;border-radius:10px;background:#4856d6;color:white;font-weight:700;font-size:16px;cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}.warning{margin-top:14px;padding:12px;border-radius:10px;background:#fff4db;color:#805b00}
+.success{margin-top:14px;padding:12px;border-radius:10px;background:#e9f8ef;color:#176b3a}
+@media(max-width:600px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+<h1>ArcFlow Agent Payment Demo</h1>
+<p class="muted">A safe preview of an agent preparing a payment. No wallet is connected and no transaction is broadcast.</p>
+<div class="grid">
+<div><label>Agent</label><input id="agent" value="arcflow-research-agent" readonly></div>
+<div><label>Network</label><select id="network"><option value="5042">Arc Mainnet · 5042</option><option value="5042002">Arc Testnet · 5042002</option></select></div>
+</div>
+<label>Recipient address</label><input id="recipient" placeholder="0x...">
+<div class="grid">
+<div><label>Amount (USDC)</label><input id="amount" type="number" min="0" step="0.000001" value="0.01"></div>
+<div><label>Agent limit (USDC)</label><input id="limit" type="number" min="0" step="0.000001" value="0.01"></div>
+</div>
+<label>Purpose</label><input id="purpose" value="Pay for one research response">
+<label><input id="approval" type="checkbox" checked> Require human approval before signing</label>
+<button id="prepare">Prepare payment intent</button>
+<div id="result" class="card" hidden></div>
+<script>
+const $=id=>document.getElementById(id);
+$("prepare").onclick=()=>{
+  const amount=Number($("amount").value), limit=Number($("limit").value);
+  const network=$("network").value==="5042"?"Arc Mainnet":"Arc Testnet";
+  const result=$("result");
+  if(!/^0x[a-fA-F0-9]{40}$/.test($("recipient").value)){result.hidden=false;result.className="warning";result.textContent="Enter a valid EVM recipient address before preparing the intent.";return}
+  if(!amount||amount>limit){result.hidden=false;result.className="warning";result.textContent="The requested amount must be positive and within the agent spending limit.";return}
+  const id="pi_"+Date.now();
+  result.hidden=false;result.className="success";
+  result.innerHTML="<div class='row'><span>Intent ID</span><strong>"+id+"</strong></div>"+
+    "<div class='row'><span>Agent</span><strong>"+$("agent").value+"</strong></div>"+
+    "<div class='row'><span>Network</span><strong>"+network+"</strong></div>"+
+    "<div class='row'><span>Amount</span><strong>"+amount.toFixed(6)+" USDC</strong></div>"+
+    "<div class='row'><span>Approval</span><strong>"+($("approval").checked?"Human approval required":"Policy approval only")+"</strong></div>"+
+    "<div class='row'><span>Transaction</span><strong>Not submitted</strong></div>";
+};
+</script>
+</main>
+</body>
+</html>
