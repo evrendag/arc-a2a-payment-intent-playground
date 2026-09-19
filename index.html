@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ArcFlow Agent Payment Demo</title>
+<style>
+body{font:16px system-ui,sans-serif;background:#f6f7fb;color:#172033;max-width:760px;margin:32px auto;padding:0 18px}
+main{background:#fff;border-radius:18px;padding:28px;box-shadow:0 8px 30px #17203318}
+h1{margin:0 0 8px}.muted{color:#667085}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+label{display:block;font-size:13px;color:#667085;margin:14px 0 6px}
+input,select{box-sizing:border-box;width:100%;padding:12px;border:1px solid #d8dee9;border-radius:10px;font:inherit}
+.card{border:1px solid #e1e6ef;border-radius:12px;padding:14px;margin-top:18px}
+.row{display:flex;justify-content:space-between;gap:18px;padding:8px 0;border-bottom:1px solid #eef1f5}.row:last-child{border:0}
+button{margin-top:18px;width:100%;padding:13px;border:0;border-radius:10px;background:#4856d6;color:white;font-weight:700;font-size:16px;cursor:pointer}
+button.secondary{background:#eef0ff;color:#3440a8}button.danger{background:#b42318}
+button:disabled{opacity:.5;cursor:not-allowed}.warning{margin-top:14px;padding:12px;border-radius:10px;background:#fff4db;color:#805b00}
+.success{margin-top:14px;padding:12px;border-radius:10px;background:#e9f8ef;color:#176b3a}
+.error{margin-top:14px;padding:12px;border-radius:10px;background:#fee4e2;color:#912018}
+small{color:#667085}@media(max-width:600px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+<h1>ArcFlow Agent Payment Demo</h1>
+<p class="muted">A real-USDC payment flow on Arc Mainnet. The agent prepares the intent; MetaMask shows the transaction and you approve the signature.</p>
+
+<div class="card">
+  <div class="row"><span>Agent</span><strong>arcflow-research-agent</strong></div>
+  <div class="row"><span>Network policy</span><strong>Arc Mainnet · chain 5042</strong></div>
+  <div class="row"><span>USDC contract</span><strong>0x3600…0000</strong></div>
+  <div class="row"><span>Max per intent</span><strong>0.010000 USDC</strong></div>
+  <button id="connect" class="secondary">Connect MetaMask</button>
+  <div id="wallet" class="muted"></div>
+</div>
+
+<label>Recipient address</label>
+<input id="recipient" placeholder="0x...">
+<div class="grid">
+  <div><label>Amount (USDC)</label><input id="amount" type="number" min="0.000001" max="0.01" step="0.000001" value="0.01"></div>
+  <div><label>Agent limit (USDC)</label><input id="limit" type="number" value="0.01" readonly></div>
+</div>
+<label>Purpose</label><input id="purpose" value="Pay for one research response">
+<label><input id="approval" type="checkbox"> I reviewed the recipient and amount. Require my approval before signing.</label>
+<button id="prepare">Prepare payment intent</button>
+<button id="send" class="danger" disabled>Sign &amp; send real USDC</button>
+<div id="result" class="card" hidden></div>
+<small>Never enter a seed phrase or private key here. This page cannot spend without a wallet signature.</small>
+
+<script>
+const ARC_CHAIN_ID="0x13b2";
+const ARC_RPC="https://rpc.mainnet.arc.io";
+const ARC_EXPLORER="https://explorer.arc.io/tx/";
+const USDC="0x3600000000000000000000000000000000000000";
+const MAX_USDC=10000n; // 0.01 USDC, ERC-20 has 6 decimals
+const $=id=>document.getElementById(id);
+let account=null, prepared=null;
+
+function validAddress(a){return /^0x[a-fA-F0-9]{40}$/.test(a)}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function parseUsdc(value){
+  const s=String(value).trim();
+  if(!/^\d+(\.\d{1,6})?$/.test(s)) throw new Error("Amount must use up to 6 decimal places.");
+  const [whole,frac=""]=s.split(".");
+  return BigInt(whole)*1000000n+BigInt((frac+"000000").slice(0,6));
+}
+function padWord(hex){return hex.replace(/^0x/,"").padStart(64,"0")}
+function amountToHex(units){return "0x"+units.toString(16)}
+function show(kind,msg){const r=$("result");r.hidden=false;r.className=kind;r.innerHTML=msg}
+async function rpc(method,params){return window.ethereum.request({method,params})}
+async function connect(){
+  if(!window.ethereum){show("warning","MetaMask (or another EVM wallet) was not found. Open this page in a wallet browser.");return}
+  try{
+    const accounts=await rpc("eth_requestAccounts",[]);
+    account=accounts[0];
+    const chain=await rpc("eth_chainId",[]);
+    if(chain!==ARC_CHAIN_ID){
+      show("warning","Your wallet is not on Arc Mainnet. Click the network switch request in MetaMask, then connect again.");
+      try{await rpc("wallet_switchEthereumChain",[{chainId:ARC_CHAIN_ID}])}catch(e){
+        if(e.code===4902) await rpc("wallet_addEthereumChain",[{chainId:ARC_CHAIN_ID,chainName:"Arc",nativeCurrency:{name:"USDC",symbol:"USDC",decimals:18},rpcUrls:[ARC_RPC],blockExplorerUrls:["https://explorer.arc.io"]}]);
+        else throw e;
+      }
+    }
+    const finalChain=await rpc("eth_chainId",[]);
+    if(finalChain!==ARC_CHAIN_ID) throw new Error("Arc Mainnet was not selected.");
+    const balData="0x70a08231"+padWord(account);
+    const raw=await rpc("eth_call",[{to:USDC,data:balData},"latest"]);
+    const units=BigInt(raw);
+    $("wallet").textContent="Connected: "+account.slice(0,6)+"…"+account.slice(-4)+" · ERC-20 balance: "+(Number(units)/1e6).toFixed(6)+" USDC";
+    show("success","Wallet connected on Arc Mainnet. No transaction has been sent.");
+  }catch(e){show("error","Wallet connection failed: "+esc(e.message||e))}
+}
+$("connect").onclick=connect;
+$("prepare").onclick=()=>{
+  try{
+    if(!account) throw new Error("Connect your wallet first.");
+    if(!validAddress($("recipient").value)) throw new Error("Enter a valid EVM recipient address.");
+    if(!$("approval").checked) throw new Error("Tick the approval box after reviewing the recipient and amount.");
+    const units=parseUsdc($("amount").value), limit=parseUsdc($("limit").value);
+    if(units<=0n || units>limit || units>MAX_USDC) throw new Error("Amount must be positive and no more than the 0.010000 USDC agent limit.");
+    prepared={id:"pi_"+Date.now(),recipient:$("recipient").value,units,purpose:$("purpose").value};
+    $("send").disabled=false;
+    show("success","<div class='row'><span>Intent ID</span><strong>"+prepared.id+"</strong></div>"+
+      "<div class='row'><span>Recipient</span><strong>"+esc(prepared.recipient.slice(0,8)+"…"+prepared.recipient.slice(-6))+"</strong></div>"+
+      "<div class='row'><span>Amount</span><strong>"+(Number(units)/1e6).toFixed(6)+" USDC</strong></div>"+
+      "<div class='row'><span>Purpose</span><strong>"+esc(prepared.purpose)+"</strong></div>"+
+      "<div class='row'><span>Status</span><strong>Ready — waiting for wallet signature</strong></div>");
+  }catch(e){$("send").disabled=true;show("warning",esc(e.message||e))}
+};
+$("send").onclick=async()=>{
+  if(!prepared||!account)return;
+  $("send").disabled=true;
+  try{
+    const data="0xa9059cbb"+padWord(prepared.recipient)+padWord(amountToHex(prepared.units));
+    const txHash=await rpc("eth_sendTransaction",[{from:account,to:USDC,value:"0x0",data}]);
+    show("success","Transaction submitted. Waiting for confirmation…<div class='row'><span>Hash</span><strong>"+esc(txHash.slice(0,12)+"…"+txHash.slice(-10))+"</strong></div>");
+    let receipt=null;
+    for(let i=0;i<60;i++){receipt=await rpc("eth_getTransactionReceipt",[txHash]);if(receipt)break;await new Promise(r=>setTimeout(r,2000))}
+    if(!receipt){show("warning","Still pending. Check the transaction on <a href='"+ARC_EXPLORER+encodeURIComponent(txHash)+"' target='_blank' rel='noreferrer'>Arc Explorer</a>.");return}
+    const ok=receipt.status==="0x1";
+    show(ok?"success":"error","<strong>"+(ok?"Payment confirmed":"Payment failed")+"</strong><div class='row'><span>Transaction hash</span><a href='"+ARC_EXPLORER+encodeURIComponent(txHash)+"' target='_blank' rel='noreferrer'>View on Arc Explorer</a></div>");
+  }catch(e){show("error","Transaction was not sent: "+esc(e.message||e));$("send").disabled=false}
+};
+</script>
+</main>
+</body>
+</html>
