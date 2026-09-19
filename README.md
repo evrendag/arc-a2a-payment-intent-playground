@@ -18,6 +18,14 @@ The [ArcFlow Agent Payment Demo](src/agent-demo.html) demonstrates:
 
 The demo uses the Arc USDC ERC-20 interface for the transfer. It does not use a private key or send anything until the user clicks the final button and approves the transaction in the wallet.
 
+## Testnet smart contract
+
+[PaymentIntentRegistry.sol](contracts/PaymentIntentRegistry.sol) adds an escrow-based lifecycle for agent payments:
+
+`createIntent → approveIntent → executeIntent`
+
+It also supports cancellation and expiry refunds. The contract is experimental and unaudited. Use it on Arc Testnet only. See the [testnet deployment guide](contracts/DEPLOY.md).
+
 ## Arc network configuration
 
 Verified network settings are stored in [config/arc-networks.json](config/arc-networks.json).
@@ -35,7 +43,7 @@ Arc Testnet:
 - Chain ID: `5042002`
 - Explorer: `https://explorer.testnet.arc.io`
 
-Arc uses USDC as native gas. The native gas representation uses 18 decimals, while the ERC-20 interface uses 6 decimals. The demo uses 6-decimal ERC-20 units for the payment amount.
+Arc uses USDC as native gas. The native gas representation uses 18 decimals, while the ERC-20 interface uses 6 decimals. The demo and escrow contract use 6-decimal ERC-20 units for payment amounts.
 
 ## Run the demo
 
@@ -54,6 +62,8 @@ A request can also become `rejected`, `expired`, or `cancelled`. The payment int
 - `payment-intent.schema.json` — JSON Schema for the experimental format.
 - `config/arc-networks.json` — mainnet and testnet network configuration.
 - `config/agent-profile.json` — example agent purpose and spending policy.
+- `contracts/PaymentIntentRegistry.sol` — escrowed, human-approved payment intent contract.
+- `contracts/DEPLOY.md` — Arc Testnet deployment and lifecycle guide.
 - `examples/research-agent-payment.json` — an agent paying for a research API call.
 - `examples/merchant-agent-payment.json` — an agent preparing a merchant payment.
 - `src/preview.html` — payment intent preview.
