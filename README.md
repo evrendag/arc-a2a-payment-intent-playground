@@ -2,33 +2,21 @@
 
 An experimental, human-readable format for AI agents to describe a proposed USDC payment before it is signed.
 
-This project is a small learning tool for exploring agent-to-agent payments on Arc Mainnet and Testnet. It does not custody funds, sign transactions, or claim to be an official Arc standard.
+This project is a small learning tool for exploring agent-to-agent payments on Arc Mainnet and Testnet. It does not custody funds, hold private keys, or sign in the background. The wallet owner must approve the final MetaMask transaction.
 
 ## What the agent demo includes
 
-The new [ArcFlow Agent Payment Demo](src/agent-demo.html) demonstrates:
+The [ArcFlow Agent Payment Demo](src/agent-demo.html) demonstrates:
 
 1. An agent identity and purpose.
-2. A per-intent spending limit.
-3. Mainnet/Testnet chain selection.
+2. A per-intent spending limit (default: 0.010000 USDC).
+3. Arc Mainnet chain verification (chain ID 5042).
 4. Payment-intent creation.
-5. Human approval as the default policy.
-6. A transparent result showing that no transaction was submitted.
+5. An explicit human approval checkbox.
+6. MetaMask transaction preparation and user signature.
+7. Confirmation status, transaction hash, and Arc Explorer link.
 
-The demo validates the recipient format and refuses amounts above the agent limit. It intentionally does not connect a wallet or broadcast a transaction yet.
-
-## Why payment intents?
-
-An agent should not jump directly from a task to a transfer. Before signing, a user or policy engine should be able to inspect:
-
-- who will receive the payment;
-- which network and token are used;
-- the maximum amount;
-- why the payment is being requested;
-- when the request expires;
-- whether the same request has already been processed.
-
-A payment intent makes those details explicit.
+The demo uses the Arc USDC ERC-20 interface for the transfer. It does not use a private key or send anything until the user clicks the final button and approves the transaction in the wallet.
 
 ## Arc network configuration
 
@@ -47,13 +35,19 @@ Arc Testnet:
 - Chain ID: `5042002`
 - Explorer: `https://explorer.testnet.arc.io`
 
-Arc uses USDC as native gas. The native gas representation uses 18 decimals, while the ERC-20 interface uses 6 decimals. Applications should use the ERC-20 interface for balance reads and transfers and must not mix these decimal values.
+Arc uses USDC as native gas. The native gas representation uses 18 decimals, while the ERC-20 interface uses 6 decimals. The demo uses 6-decimal ERC-20 units for the payment amount.
+
+## Run the demo
+
+Serve the repository over HTTPS (for example with GitHub Pages or another static host), open `src/agent-demo.html`, connect MetaMask, and verify the recipient and amount before signing.
+
+A wallet connection alone does not spend money. The final “Sign & send real USDC” button opens the wallet confirmation. Use a small amount first and check the recipient carefully.
 
 ## Example lifecycle
 
 `created → reviewed → approved → submitted → confirmed`
 
-A request can also become `rejected`, `expired`, or `cancelled`. The intent is not a transaction receipt; it is a proposal that can be reviewed before execution.
+A request can also become `rejected`, `expired`, or `cancelled`. The payment intent is a reviewable proposal; the transaction receipt is only available after the wallet signs and the network confirms it.
 
 ## Files
 
@@ -63,14 +57,10 @@ A request can also become `rejected`, `expired`, or `cancelled`. The intent is n
 - `examples/research-agent-payment.json` — an agent paying for a research API call.
 - `examples/merchant-agent-payment.json` — an agent preparing a merchant payment.
 - `src/preview.html` — payment intent preview.
-- `src/agent-demo.html` — interactive agent payment preview.
-
-## Run the demo
-
-Open `src/agent-demo.html` directly in a browser. No wallet connection, private key, or API key is required.
+- `src/agent-demo.html` — wallet-approved agent payment demo.
 
 ## Important limitations
 
-This is an educational prototype. It does not verify wallet ownership, guarantee payment settlement, or replace a production payment authorization system. Do not send real funds from this repository without independently reviewing the recipient, amount, network, contract code, and transaction data.
+This is an educational prototype, not an official Arc standard. Review the recipient, amount, network, token contract, and transaction data independently. Never enter a seed phrase or private key. Do not treat an onchain payment as reversible.
 
 Feedback and examples from Arc builders are welcome.
